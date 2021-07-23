@@ -1,11 +1,13 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import "./App.css";
 import Todolist from "./components/TodoList/Todolist";
 
 function App() {
   const [todo, setTodo] = useState([]);
+  let input = useRef();
   const [totdoInput, setTodoInput] = useState("");
-  const handleAddTodo = () => {
+  const handleAddTodo = (e) => {
+    e.preventDefault();
     const todoObj = {
       id: todo[todo.length - 1]?.id + 1 || 1,
       isEdit: false,
@@ -13,7 +15,9 @@ function App() {
       isChecked: false,
     };
     setTodo([...todo, todoObj]);
+    localStorage.setItem("todo", JSON.stringify(todo));
     setTodoInput("");
+    input.current.focus();
   };
 
   const editCheckHandler = useCallback(
@@ -55,6 +59,13 @@ function App() {
     },
     [todo]
   );
+  useEffect(() => {
+    let storedTodoList = localStorage.getItem("todo")
+      ? JSON.parse(localStorage.getItem("todo"))
+      : [];
+    setTodo(storedTodoList);
+  }, []);
+
   return (
     <div className="App">
       <header className="App-header">
@@ -62,15 +73,22 @@ function App() {
         <h6>Your Complete list of Todo </h6>
       </header>
       <hr />
-      <input
-        className="input-add"
-        value={totdoInput}
-        onChange={(e) => setTodoInput(() => e.target.value)}
-        placeholder="Enter Todo"
-      />
-      <button className="button-add" onClick={handleAddTodo}>
-        Add Todo
-      </button>
+      <form onSubmit={handleAddTodo}>
+        <input
+          className="input-add"
+          value={totdoInput}
+          onChange={(e) => setTodoInput(() => e.target.value)}
+          placeholder="Enter Todo"
+          ref={input}
+          required
+        />
+        <input
+          type="submit"
+          className="button-add"
+          value="Add Todo"
+          // disabled={!totdoInput}
+        />
+      </form>
       <hr />
       <Todolist
         todoList={todo}
